@@ -8,17 +8,20 @@ from torch.utils.data import Dataset
 
 class NewsData:
     
-    def __init__(self, data_path, votes_threshold, val_pct=0.2):
-        self.samples = []
-        self._process_data()
+    def __init__(self, data_path, votes_threshold):
+        self.data_path = data_path
         self.votes_threshold = votes_threshold
+        self.dataframe = self._process_data()
         
     def __len__(self):
-        return len(self.samples)
+        return len(self.dataframe)
     
     def __getitem__(self, idx):
         # Return features and label for the sample
-        pass
+        text = self.dataframe['title'].iloc[idx]
+        up_votes = self.dataframe['up_votes'].iloc[idx]
+        label = 1 if up_votes >= self.votes_threshold else 0
+        return text, label
     
     def _get_class(self, up_votes):
         # Convert up_votes into one of the two classes: Popular or Not Popular
@@ -26,10 +29,9 @@ class NewsData:
     
     def _process_data(self):
         # Read csv as pandas dataframe
-        dataset = pd.read_csv(self.data_path)
+        dataframe = pd.read_csv(self.data_path)
         # Drop down irrelevant features (Only "title" and "up_votes" are selected)
-        dataset = dataset[['title', 'up_votes']]
-        dataset.loc[dataset['up_votes'] >= self.votes_threshold, 'up_votes'] = 1
-        dataset.loc[dataset['up_votes'] < self.votes_threshold, 'up_votes'] = 0
+        dataframe = dataframe[['title', 'up_votes']]
+        return dataframe
         
         
